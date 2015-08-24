@@ -71,11 +71,116 @@ Chip8.prototype.initialize = function() {
   }
 }
 
-Chip8.prototype.loadProgram = function() {
+Chip8.prototype.loadProgram = function(program) {
 
+  for(var i = 0; i < program.length; i++) {
+    this.memory[512 + i] = program[i];
+  }
 }
 
 Chip8.prototype.startCycle = function() {
 
   var opcode = this.memory[this.pc] << 8 | this.memory[this.pc + 1];
+  var x = (opcode & 0x0f00) >> 8;
+  var y = (opcode & 0x00f0) >> 4;
+
+  this.pc += 2;
+
+  switch(opcode & 0xf000) {
+
+    case 0x0000:
+        switch(opcode) {
+
+            case 0x00e:
+                //clear display implement later
+                break;
+
+            case 0x00ee:
+                //return from a subroutine
+                break;
+
+            default:
+                console.log("Unknown opcode [0x0000]: 0x%X\n "+ opcode);
+        }
+        break;
+
+    case 0xa000:
+        this.I = opcode & 0x0fff;
+        break;
+
+    case 0x1000:
+        this.pc = opcode & 0x0fff;
+        break;
+
+    case 0x2000:
+        this.stackPointer += 1;
+        this.stack.push(this.pc);
+        this.pc = opcode & 0x0fff;
+        break;
+
+    case 0x3000:
+        if(this.Vx[x] === (opcode & 0x00ff)) {
+          this.pc += 2;
+        }
+        break;
+
+    case 0x4000:
+        if(this.Vx[x] !== (opcode & 0x00ff)){
+          this.pc += 2;
+        }
+        break;
+
+    case 0x5000:
+        if(this.Vx[x] === this.Vx[y]) {
+          this.pc += 2;
+        }
+        break;
+
+    case 0x6000:
+        this.Vx[x] = (opcode & 0x00ff);
+        break;
+
+    case 0x7000:
+        this.Vx[x] += (opcode & 0x00ff);
+        break;
+
+    case 0x8000:
+        switch(opcode & 0x000f) {
+
+            case 0x0000:
+                this.Vx[x] = this.Vx[y];
+                break;
+
+            case 0x0001:
+                this.Vx[x] = this.Vx[x] | this.Vx[y];
+                break;
+
+            case 0x0002:
+                this.Vx[x] = this.Vx[x] & this.Vx[y];
+                break;
+
+            case 0x0003:
+                this.Vx[x] = this.Vx[x] ^ this.Vx[y];
+                break;
+
+            case 0x0004:
+                this.Vx[x] += this.Vx[y];
+                if(this.Vx[x] > 255) {
+                  this.Vx[0xf] = 1;
+                  this.Vx[x] -= 256
+                }
+                else this.Vx[0xf] = 0;
+                break;
+
+            case 0x0005:
+                this.Vx[x] -= this.Vx[y];
+                if(this.Vx[x] < 0) {
+                  this.Vx[0xf] = 0;
+                  this.Vx[x] += 256
+                }
+                else this.Vx[0xf] = 1;
+                break;
+        }
+        break;
+  }
 }
