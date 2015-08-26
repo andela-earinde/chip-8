@@ -41,7 +41,7 @@ function Chip8() {
     0xE0, 0x90, 0x90, 0x90, 0xE0, // D
     0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
     0xF0, 0x80, 0xF0, 0x80, 0x80  // F
-  ]
+  ];
 }
 
 Chip8.prototype.initialize = function() {
@@ -176,11 +176,46 @@ Chip8.prototype.startCycle = function() {
                 this.Vx[x] -= this.Vx[y];
                 if(this.Vx[x] < 0) {
                   this.Vx[0xf] = 0;
-                  this.Vx[x] += 256
+                  this.Vx[x] += 256;
                 }
                 else this.Vx[0xf] = 1;
                 break;
+
+            case 0x0006:
+                this.Vx[0xf] = this.Vx[x] & 0x1;
+                this.Vx[x] >>= 1;
+                break;
+
+            case 0x0007:
+                this.Vx[x] = this.Vx[y] - this.Vx[y];
+                if(this.Vx[x] < 0) {
+                  this.Vx[0xf] = 0;
+                  this.Vx[x] += 256;
+                }
+                else this.Vx[0xf] = 1;
+                break;
+
+            case 0x000e:
+                this.Vx[0xf] = +(this.Vx[x] & 0x80);
+                this.Vx[x] <<= 1;
+                if(this.Vx[x] > 256) this.Vx[x] -= 256;
+                break;
         }
         break;
+
+    case 0x9000:
+        if(this.Vx[x] !== Vx[y]) this.pc += 2;
+        break;
+
+    case 0xb000:
+        this.pc = (opcode & 0x0fff) + this.Vx[0x0];
+        break;
+
+    case 0xc000:
+        this.Vx[x] = Math.floor(Math.random() * 0xff) & (opcode & 0x00ff);
+        break;
+
+    case 0xd000:
+        
   }
 }
