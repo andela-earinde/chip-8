@@ -50,11 +50,21 @@ Chip8.prototype.initialize = function() {
 
   this.I = 0;
 
+  this.keys = [];
+
   this.soundTimer = 0;
 
   this.delayTimer = 0;
 
   this.stackPointer = 0;
+
+  this.displayWidth = 64;
+
+  this.displayHeight = 32;
+
+  this.drawFlag = false;
+
+  this.display = new Array(this.displayWidth * this.displayHeight);
 
   //reset the registers
   for(var i = 0; i < this.Vx.length; i++) {
@@ -204,7 +214,7 @@ Chip8.prototype.startCycle = function() {
         break;
 
     case 0x9000:
-        if(this.Vx[x] !== Vx[y]) this.pc += 2;
+        if(this.Vx[x] !== this.Vx[y]) this.pc += 2;
         break;
 
     case 0xb000:
@@ -216,6 +226,34 @@ Chip8.prototype.startCycle = function() {
         break;
 
     case 0xd000:
-        
+        this.Vx[0xf] = 0;
+        var xCord = this.Vx[x];
+        var yCord = this.Vx[y];
+        var height = opcode & 0x000f;
+        var pixel = 0;
+
+        for(var i = 0; i < height; i++) {
+          pixel = this.memory[this.I + i];
+          for(var j = 0; j < 8; j++) {
+            dx = xCord + j;
+            dy = yCord + i
+            if((pixel & (0x80 >> j)) != 0) {
+              if(this.display[dx + (dy * displayWidth)] === 1)
+                this.Vx[0xf] = 1;
+              if((xCord + j) > this.displayWidth) dx -= this.displayWidth;
+              if((yCord + i) > this.displayHeight) dy -= this.displayHeight;
+              this.display[dx + (dy * displayWidth)] ^= 1;
+            }
+          }
+          this.drawFlag = true;
+        }
+        break;
+
+    case 0xe000:
+        switch(opcode & 0x00ff) {
+
+            case 0x009e:
+
+        }
   }
 }
