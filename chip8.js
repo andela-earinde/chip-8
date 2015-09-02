@@ -52,6 +52,8 @@ Chip8.prototype.initialize = function() {
 
   this.keys = [];
 
+  this.keyPressed = false
+
   this.soundTimer = 0;
 
   this.delayTimer = 0;
@@ -79,6 +81,7 @@ Chip8.prototype.initialize = function() {
   for(var i = 0; i < this.hexChars.length; i++) {
     this.memory[i] = this.hexChars[i];
   }
+
 }
 
 Chip8.prototype.loadProgram = function(program) {
@@ -87,6 +90,8 @@ Chip8.prototype.loadProgram = function(program) {
     this.memory[512 + i] = program[i];
   }
 }
+
+Chip8.prototype
 
 Chip8.prototype.startCycle = function() {
 
@@ -240,8 +245,8 @@ Chip8.prototype.startCycle = function() {
             if((pixel & (0x80 >> j)) != 0) {
               if(this.display[dx + (dy * displayWidth)] === 1)
                 this.Vx[0xf] = 1;
-              if((xCord + j) > this.displayWidth) dx -= this.displayWidth;
-              if((yCord + i) > this.displayHeight) dy -= this.displayHeight;
+              if(dx > this.displayWidth) dx -= this.displayWidth;
+              if(dy > this.displayHeight) dy -= this.displayHeight;
               this.display[dx + (dy * displayWidth)] ^= 1;
             }
           }
@@ -253,7 +258,49 @@ Chip8.prototype.startCycle = function() {
         switch(opcode & 0x00ff) {
 
             case 0x009e:
+                if(this.keys[this.Vx[x]] !== 0) this.pc += 2;
+                break;
 
+            case 0x00a1:
+                if(this.keys[this.Vx[x]] === 0) this.pc += 2;
+                break;
+        }
+        break;
+
+    case 0xf000:
+        switch(opcode & 0x00ff) {
+
+            case 0x0007:
+                this.Vx[x] = this.delayTimer;
+                break;
+
+            case 0x000a:
+                this.stop();
+                this.freeze = function() {
+                  if(this.keyPressed || this.keyPressed === 0) {
+                    this.Vx[x] = this.keyPressed;
+                    this.start();
+                  }
+                }
+                break;
+
+            case 0x0015:
+                this.delayTimer = this.Vx[x];
+                break;
+
+            case 0x0018:
+                this.soundTimer = this.Vx[x]
+                break;
+
+            case 0x001e:
+                this.I += this.Vx[x];
+                break;
+
+            case 0x0029:
+                this.I = this.Vx[x] * 5;
+                break;
+
+            case 0x0033:
         }
   }
 }
