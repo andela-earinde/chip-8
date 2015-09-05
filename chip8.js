@@ -16,13 +16,13 @@ function Chip8() {
   //8-bit
   this.stackPointer = null;
 
-  this.memory = new Array(4095);
+  this.memory = new Uint8Array(4096);
 
   //16-bit long stack
   this.stack = new Array(16);
 
   //registers 8-bit
-  this.Vx = new Array(16);
+  this.Vx = new Uint8Array(16);
 
   this.hexChars = [
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -110,8 +110,11 @@ Chip8.prototype.emulateChip8 = function() {
   this.isRunning = true;
 
   var emulateCycle = function() {
-    if(this.isRunning) {
-      this.startCycle();
+
+    for(var i = 0; i < 3; i++) {
+      if(this.isRunning) {
+        this.startCycle();
+      }
     }
 
     if(this.drawFlag) {
@@ -143,20 +146,20 @@ Chip8.prototype.startCycle = function() {
   switch(opcode & 0xf000) {
 
     case 0x0000:
-        switch(opcode) {
-            //clear the sisply
+        switch(opcode & 0x00ff) {
+            //clear the disply
             //CLS
-            case 0x00e:
+            case 0x00e0:
                 this.renderer.clearDisplay()
+                for (var i = 0; i < this.display.length; i++) {
+                  this.display[i] = 0;
+                }
                 break;
 
             case 0x00ee:
                 this.pc = this.stack[this.stack.length - 1];
                 this.stackPointer -= 1;
                 break;
-
-            default:
-                console.log("Unknown opcode [0x0000]: "+ opcode);
         }
         break;
 
@@ -220,45 +223,42 @@ Chip8.prototype.startCycle = function() {
                 break;
 
             case 0x0004:
-                this.Vx[x] += this.Vx[y];
-                if(this.Vx[x] > 255) {
+                var sum = this.Vx[x] + this.Vx[y];
+
+                if (sum > 0xff) {
                   this.Vx[0xf] = 1;
-                  this.Vx[x] -= 256
+                } else {
+                  this.Vx[0xf] = 0;
                 }
-                else this.Vx[0xf] = 0;
+                this.Vx[x] = sum;
                 break;
 
             case 0x0005:
-                this.Vx[x] -= this.Vx[y];
-                if(this.Vx[x] < 0) {
+                if(this.Vx[x] > this.Vy[y]) {
                   this.Vx[0xf] = 0;
-                  this.Vx[x] += 256;
                 }
                 else this.Vx[0xf] = 1;
+                this.v[x] = this.v[x] - this.v[y];
                 break;
 
             case 0x0006:
-                this.Vx[0xf] = this.Vx[x] & 0x1;
+                this.Vx[0xf] = this.Vx[x] & 0x01;
                 this.Vx[x] >>= 1;
                 break;
 
             case 0x0007:
                 this.Vx[x] = this.Vx[y] - this.Vx[y];
-                if(this.Vx[x] < 0) {
+                if(this.Vx[x] > this.Vx[y]) {
                   this.Vx[0xf] = 0;
-                  this.Vx[x] += 256;
                 }
                 else this.Vx[0xf] = 1;
+                this.v[x] = this.v[y] - this.v[x];
                 break;
 
             case 0x000e:
-                this.Vx[0xf] = +(this.Vx[x] & 0x80);
+                this.Vx[0xf] = this.Vx[x] & 0x80;
                 this.Vx[x] <<= 1;
-                if(this.Vx[x] > 256) this.Vx[x] -= 256;
                 break;
-
-            default:
-                console.log("Unknown opcode: "+opcode);
         }
         break;
 
@@ -287,11 +287,11 @@ Chip8.prototype.startCycle = function() {
             dx = xCord + j;
             dy = yCord + i
             if((pixel & (0x80 >> j)) != 0) {
-              if(this.display[dx + (dy * displayWidth)] === 1)
+              if(this.display[dx + (dy * this.displayWidth)] === 1)
                 this.Vx[0xf] = 1;
               if(dx > this.displayWidth) dx -= this.displayWidth;
               if(dy > this.displayHeight) dy -= this.displayHeight;
-              this.display[dx + (dy * displayWidth)] ^= 1;
+              this.display[dx + (dy * this.displayWidth)] ^= 1;
             }
           }
           this.drawFlag = true;
@@ -308,9 +308,6 @@ Chip8.prototype.startCycle = function() {
             case 0x00a1:
                 if(this.keys[this.Vx[x]] === 0) this.pc += 2;
                 break;
-
-            default:
-                console.log("Unknown opcode: "+opcode);
         }
         break;
 
@@ -353,19 +350,16 @@ Chip8.prototype.startCycle = function() {
                 break;
 
             case 0x0055:
-                for(var i = 0; i <= this.Vx[x]; i++) {
+                for(var i = 0; i <= x; i++) {
                   this.memory[this.I + i] = this.Vx[i];
                 }
                 break;
 
             case 0x0065:
-                for(var i = 0; i <= this.Vx[x]; i++) {
+                for(var i = 0; i <= x; i++) {
                   this.Vx[i] = this.memory[this.I + i];
                 }
                 break;
-
-            default:
-                console.log("Unknown opcode: "+opcode);
         }
         break;
 
