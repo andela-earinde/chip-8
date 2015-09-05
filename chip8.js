@@ -52,8 +52,6 @@ Chip8.prototype.initialize = function() {
 
   this.keys = [];
 
-  this.keyPressed = false
-
   this.soundTimer = 0;
 
   this.delayTimer = 0;
@@ -74,7 +72,7 @@ Chip8.prototype.initialize = function() {
   }
 
   //reset the stack
-  for(var i = 0; i < this.stack.lenght; i++) {
+  for(var i = 0; i < this.stack.length; i++) {
     this.stack[i] = 0;
   }
 
@@ -91,7 +89,48 @@ Chip8.prototype.loadProgram = function(program) {
   }
 }
 
-Chip8.prototype
+Chip8.prototype.setRenderer = function(renderer) {
+  this.renderer = renderer
+}
+
+Chip8.prototype.KeyPressed = function(key) {
+  this.keys[key] = true;
+}
+
+Chip8.prototype.keyReleased = function(key) {
+  this.keys[key] = false;
+}
+
+Chip8.prototype.stop = function() {
+  this.isRunning = false;
+}
+
+Chip8.prototype.emulateChip8 = function() {
+
+  this.isRunning = true;
+
+  var emulateCycle = function() {
+    if(this.isRunning) {
+      this.startCycle();
+    }
+
+    if(this.drawFlag) {
+      this.renderer.drawGraphics(this.display);
+      this.drawFlag = false;
+    }
+
+    if(this.delayTimer > 0) {
+      this.delayTimer--;
+    }
+
+    if(this.soundTimer > 0) {
+      if(this.soundTimer === 1) ;//log a sound
+      this.soundTimer--;
+    }
+    window.requestAnimationFrame(emulateCycle);
+  }.bind(this);
+  window.requestAnimationFrame(emulateCycle);
+}
 
 Chip8.prototype.startCycle = function() {
 
@@ -105,17 +144,19 @@ Chip8.prototype.startCycle = function() {
 
     case 0x0000:
         switch(opcode) {
-
+            //clear the sisply
+            //CLS
             case 0x00e:
-                //clear display implement later
+                this.renderer.clearDisplay()
                 break;
 
             case 0x00ee:
-                //return from a subroutine
+                this.pc = this.stack[this.stack.length - 1];
+                this.stackPointer -= 1;
                 break;
 
             default:
-                console.log("Unknown opcode [0x0000]: 0x%X\n "+ opcode);
+                console.log("Unknown opcode [0x0000]: "+ opcode);
         }
         break;
 
@@ -215,6 +256,9 @@ Chip8.prototype.startCycle = function() {
                 this.Vx[x] <<= 1;
                 if(this.Vx[x] > 256) this.Vx[x] -= 256;
                 break;
+
+            default:
+                console.log("Unknown opcode: "+opcode);
         }
         break;
 
@@ -264,6 +308,9 @@ Chip8.prototype.startCycle = function() {
             case 0x00a1:
                 if(this.keys[this.Vx[x]] === 0) this.pc += 2;
                 break;
+
+            default:
+                console.log("Unknown opcode: "+opcode);
         }
         break;
 
@@ -276,12 +323,10 @@ Chip8.prototype.startCycle = function() {
 
             case 0x000a:
                 this.stop();
-                this.freeze = function() {
-                  if(this.keyPressed || this.keyPressed === 0) {
-                    this.Vx[x] = this.keyPressed;
-                    this.start();
-                  }
-                }
+                this.continue = function(key) {
+                    this.Vx[x] = key;
+                    this.emulateChip8();
+                }.bind(this);
                 break;
 
             case 0x0015:
@@ -301,6 +346,30 @@ Chip8.prototype.startCycle = function() {
                 break;
 
             case 0x0033:
+                var numbers = String(this.Vx[x]).split("");
+                for(var i = 0; i < 3; i++) {
+                  this.memory[this.I + i] = parseInt(Number(numbers[i]));
+                }
+                break;
+
+            case 0x0055:
+                for(var i = 0; i <= this.Vx[x]; i++) {
+                  this.memory[this.I + i] = this.Vx[i];
+                }
+                break;
+
+            case 0x0065:
+                for(var i = 0; i <= this.Vx[x]; i++) {
+                  this.Vx[i] = this.memory[this.I + i];
+                }
+                break;
+
+            default:
+                console.log("Unknown opcode: "+opcode);
         }
+        break;
+
+        default:
+            console.log("Unknown opcode: "+opcode);
   }
 }
