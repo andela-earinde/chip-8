@@ -16,7 +16,7 @@ Renderer.prototype.clearDisplay = function() {
 
 Renderer.prototype.drawGraphics = function(display) {
   this.clearDisplay();
-  console.log(display);
+  //console.log(display);
   for (var i = 0; i < display.length; i++) {
     xCord = (i % 64) * 10;
     yCord = (Math.floor(i / 64)) * 10;
@@ -44,16 +44,16 @@ var loadProgramToMemory = function(program) {
   };
 
   xhr.send();
-}
+};
 
 
-function startEmulator() {
+var startEmulator = function() {
   chip8.initialize();
   var renderer = new Renderer();
-  loadProgramToMemory("INVADERS");
+  loadProgramToMemory("MERLIN");
   chip8.setRenderer(renderer);
   chip8.emulateChip8();
-}
+};
 
 
 startEmulator();

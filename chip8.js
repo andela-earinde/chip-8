@@ -16,10 +16,10 @@ function Chip8() {
   //8-bit
   this.stackPointer = null;
 
-  this.memory = new Uint8Array(4096);
+  this.memory = new Uint8Array(0x1000);
 
   //16-bit long stack
-  this.stack = new Array(16);
+  this.stack = [];
 
   //registers 8-bit
   this.Vx = new Uint8Array(16);
@@ -48,11 +48,15 @@ Chip8.prototype.initialize = function() {
 
   this.pc = 0x200;
 
+  this.step = 0;
+
   this.I = 0;
 
   this.keys = [];
 
   this.soundTimer = 0;
+
+  this.isRunning = false;
 
   this.delayTimer = 0;
 
@@ -85,12 +89,30 @@ Chip8.prototype.initialize = function() {
 Chip8.prototype.loadProgram = function(program) {
 
   for(var i = 0; i < program.length; i++) {
-    this.memory[512 + i] = program[i];
+    this.memory[0x200 + i] = program[i];
   }
 }
 
 Chip8.prototype.setRenderer = function(renderer) {
-  this.renderer = renderer
+  this.renderer = renderer;
+}
+
+Chip8.prototype.setDisplay = function(dx, dy) {
+
+  if(dx > this.displayWidth) {
+    dx -= this.displayWidth;
+  }
+  else if(dx < 0) {
+    dx += this.displayWidth;
+  }
+
+  if(dy > this.displayHeight){
+    dy -= this.displayHeight;
+  }
+  else if(dy < 0) {
+    dy += this.displayHeight;
+  }
+  this.display[dx + (dy * this.displayWidth)] ^= 1;
 }
 
 Chip8.prototype.KeyPressed = function(key) {
@@ -108,11 +130,9 @@ Chip8.prototype.stop = function() {
 Chip8.prototype.emulateChip8 = function() {
 
   this.isRunning = true;
-
   var emulateCycle = function() {
-
-    for(var i = 0; i < 3; i++) {
-      if(this.isRunning) {
+    for(var i = 0; i < 10; i++){
+      if(this.isRunning && this.memory[513]) {
         this.startCycle();
       }
     }
@@ -122,14 +142,16 @@ Chip8.prototype.emulateChip8 = function() {
       this.drawFlag = false;
     }
 
-    if(this.delayTimer > 0) {
-      this.delayTimer--;
+    if ( ! (this.step++ % 2)) {
+      if(this.delayTimer > 0) {
+        this.delayTimer -= 1;
+      }
+
+      if(this.soundTimer > 0) {
+        this.soundTimer -= 1;
+      }
     }
 
-    if(this.soundTimer > 0) {
-      if(this.soundTimer === 1) ;//log a sound
-      this.soundTimer--;
-    }
     window.requestAnimationFrame(emulateCycle);
   }.bind(this);
   window.requestAnimationFrame(emulateCycle);
@@ -146,64 +168,75 @@ Chip8.prototype.startCycle = function() {
   switch(opcode & 0xf000) {
 
     case 0x0000:
-        switch(opcode & 0x00ff) {
-            //clear the disply
+        console.log("caleed1");
+        switch(opcode) {
+            //clear the display
             //CLS
             case 0x00e0:
-                this.renderer.clearDisplay()
+                this.renderer.clearDisplay();
                 for (var i = 0; i < this.display.length; i++) {
                   this.display[i] = 0;
                 }
                 break;
 
             case 0x00ee:
-                this.pc = this.stack[this.stack.length - 1];
+                console.log("crap");
+                this.pc = this.stack.pop();
                 this.stackPointer -= 1;
                 break;
         }
         break;
 
     case 0xa000:
+        console.log("caleed2");
         this.I = opcode & 0x0fff;
         break;
 
     case 0x1000:
+        console.log("caleed3");
         this.pc = opcode & 0x0fff;
         break;
 
     case 0x2000:
+        console.log("caleed4");
         this.stackPointer += 1;
         this.stack.push(this.pc);
         this.pc = opcode & 0x0fff;
         break;
 
     case 0x3000:
-        if(this.Vx[x] === (opcode & 0x00ff)) {
+        console.log("caleed5");
+        if(this.Vx[x] == (opcode & 0x00ff)) {
           this.pc += 2;
         }
         break;
 
     case 0x4000:
-        if(this.Vx[x] !== (opcode & 0x00ff)){
+        console.log("caleed6")
+        if(this.Vx[x] != (opcode & 0x00ff)){
           this.pc += 2;
         }
         break;
 
     case 0x5000:
-        if(this.Vx[x] === this.Vx[y]) {
+        console.log("caleed7");
+        if(this.Vx[x] == this.Vx[y]) {
           this.pc += 2;
         }
         break;
 
     case 0x6000:
-        this.Vx[x] = (opcode & 0x00ff);
+        console.log("caleed8");
+        this.Vx[x] = opcode & 0x00ff;
         break;
 
     case 0x7000:
-        this.Vx[x] += (opcode & 0x00ff);
+        console.log("caleed9");
+        this.Vx[x] += opcode & 0x00ff;
         break;
 
     case 0x8000:
+        console.log("caleed10");
         switch(opcode & 0x000f) {
 
             case 0x0000:
@@ -227,54 +260,62 @@ Chip8.prototype.startCycle = function() {
 
                 if (sum > 0xff) {
                   this.Vx[0xf] = 1;
-                } else {
+                }
+                else {
                   this.Vx[0xf] = 0;
                 }
                 this.Vx[x] = sum;
                 break;
 
             case 0x0005:
-                if(this.Vx[x] > this.Vy[y]) {
+                if(this.Vx[x] > this.Vx[y]) {
+                  this.Vx[0xf] = 1;
+                }
+                else {
                   this.Vx[0xf] = 0;
                 }
-                else this.Vx[0xf] = 1;
-                this.v[x] = this.v[x] - this.v[y];
+                this.Vx[x] = this.Vx[x] - this.Vx[y];
                 break;
 
             case 0x0006:
                 this.Vx[0xf] = this.Vx[x] & 0x01;
-                this.Vx[x] >>= 1;
+                this.Vx[x] = this.Vx[x] >> 1;
                 break;
 
             case 0x0007:
-                this.Vx[x] = this.Vx[y] - this.Vx[y];
                 if(this.Vx[x] > this.Vx[y]) {
                   this.Vx[0xf] = 0;
                 }
-                else this.Vx[0xf] = 1;
-                this.v[x] = this.v[y] - this.v[x];
+                else {
+                  this.Vx[0xf] = 1;
+                }
+                this.Vx[x] = this.Vx[y] - this.Vx[x];
                 break;
 
             case 0x000e:
                 this.Vx[0xf] = this.Vx[x] & 0x80;
-                this.Vx[x] <<= 1;
+                this.Vx[x] = this.Vx[x] << 1;
                 break;
         }
         break;
 
     case 0x9000:
-        if(this.Vx[x] !== this.Vx[y]) this.pc += 2;
+        console.log("caleed11");
+        if(this.Vx[x] != this.Vx[y]) this.pc += 2;
         break;
 
     case 0xb000:
-        this.pc = (opcode & 0x0fff) + this.Vx[0x0];
+        console.log("caleed12");
+        this.pc = (opcode & 0x0fff) + this.Vx[0];
         break;
 
     case 0xc000:
+        console.log("caleed13");
         this.Vx[x] = Math.floor(Math.random() * 0xff) & (opcode & 0x00ff);
         break;
 
     case 0xd000:
+        console.log("caleed14");
         this.Vx[0xf] = 0;
         var xCord = this.Vx[x];
         var yCord = this.Vx[y];
@@ -285,13 +326,12 @@ Chip8.prototype.startCycle = function() {
           pixel = this.memory[this.I + i];
           for(var j = 0; j < 8; j++) {
             dx = xCord + j;
-            dy = yCord + i
+            dy = yCord + i;
             if((pixel & (0x80 >> j)) != 0) {
-              if(this.display[dx + (dy * this.displayWidth)] === 1)
+              if(this.display[dx + (dy * this.displayWidth)] == 1){
                 this.Vx[0xf] = 1;
-              if(dx > this.displayWidth) dx -= this.displayWidth;
-              if(dy > this.displayHeight) dy -= this.displayHeight;
-              this.display[dx + (dy * this.displayWidth)] ^= 1;
+              }
+              this.setDisplay(dx, dy);
             }
           }
           this.drawFlag = true;
@@ -299,19 +339,21 @@ Chip8.prototype.startCycle = function() {
         break;
 
     case 0xe000:
+        console.log("caleed15");
         switch(opcode & 0x00ff) {
 
             case 0x009e:
-                if(this.keys[this.Vx[x]] !== 0) this.pc += 2;
+                if(this.keys[this.Vx[x]]) this.pc += 2;
                 break;
 
             case 0x00a1:
-                if(this.keys[this.Vx[x]] === 0) this.pc += 2;
+                if(!this.keys[this.Vx[x]]) this.pc += 2;
                 break;
         }
         break;
 
     case 0xf000:
+        console.log("caleed16");
         switch(opcode & 0x00ff) {
 
             case 0x0007:
@@ -324,14 +366,14 @@ Chip8.prototype.startCycle = function() {
                     this.Vx[x] = key;
                     this.emulateChip8();
                 }.bind(this);
-                break;
+                return;
 
             case 0x0015:
                 this.delayTimer = this.Vx[x];
                 break;
 
             case 0x0018:
-                this.soundTimer = this.Vx[x]
+                this.soundTimer = this.Vx[x];
                 break;
 
             case 0x001e:
