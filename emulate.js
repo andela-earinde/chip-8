@@ -50,11 +50,17 @@ var loadProgramToMemory = function(program) {
 var startEmulator = function() {
   chip8.initialize();
   var renderer = new Renderer();
-  loadProgramToMemory("MERLIN");
+  loadProgramToMemory("HIDDEN");
   chip8.setRenderer(renderer);
   chip8.emulateChip8();
 };
 
+//instantiate Keyboard
+var keyBoard = new Keyboard(chip8);
+
+//Add key event listeners
+addEventListener("keydown", keyBoard.keyPressed.bind(keyBoard));
+addEventListener("keyup", keyBoard.keyUp.bind(keyBoard));
 
 startEmulator();
 })()
