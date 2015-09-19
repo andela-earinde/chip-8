@@ -2,6 +2,42 @@
 //initialize chip8
 var chip8 = new Chip8();
 
+ROMS = [
+    "15PUZZLE",
+    "BLINKY",
+    "BLITZ",
+    "BRIX",
+    "CONNECT4",
+    "GUESS",
+    "HIDDEN",
+    "IBM",
+    "INVADERS",
+    "KALEID",
+    "MAZE",
+    "MERLIN",
+    "MISSILE",
+    "PONG",
+    "PONG2",
+    "PUZZLE",
+    "SYZYGY",
+    "TANK",
+    "TETRIS",
+    "TICTAC",
+    "UFO",
+    "VBRIX",
+    "VERS",
+    "WIPEOFF"
+  ];
+
+//add roms to select input
+var selectInput = document.getElementById("select-game");
+for(var i = 0;  i < ROMS.length; i++) {
+  var option = document.createElement("option");
+  option.value = ROMS[i];
+  option.text = ROMS[i];
+  selectInput.appendChild(option);
+}
+
 
 //renderer to draw graphics
 function Renderer() {
@@ -16,7 +52,6 @@ Renderer.prototype.clearDisplay = function() {
 
 Renderer.prototype.drawGraphics = function(display) {
   this.clearDisplay();
-  //console.log(display);
   for (var i = 0; i < display.length; i++) {
     xCord = (i % 64) * 10;
     yCord = (Math.floor(i / 64)) * 10;

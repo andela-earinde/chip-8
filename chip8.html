@@ -7,14 +7,77 @@
   <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
-  <div class="mdl-card mdl-shadow--4dp mdl-canvas-div">
-    <div class="mdl-card__media">
-      <canvas id="screen" width="640" height="320"></canvas>
+  <!-- Always shows a header, even in smaller screens. -->
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <span class="mdl-layout-title">Chip8 Emulator</span>
+      <!-- Add spacer, to align navigation to the right -->
+      <div class="mdl-layout-spacer"></div>
+      <!-- Navigation. We hide it in small screens. -->
+      <nav class="mdl-navigation mdl-layout--large-screen-only">
+        <a class="mdl-navigation__link nav-style" href="">Github</a>
+      </nav>
     </div>
-  </div>
+  </header>
+  <main class="mdl-layout__content">
+    <div class="page-content">
+      <div class="mdl-grid canvas-keys">
+        <div class="mdl-card mdl-shadow--6dp mdl-canvas-div">
+          <div class="mdl-card__media">
+            <canvas id="screen" width="640" height="320"></canvas>
+          </div>
+        </div>
+
+        <div class="mdl-card mdl-shadow--6dp mdl-keys-div">
+          <div class="mdl-card__title">
+            <h2 class="mdl-card__title-text">Controls</h2>
+          </div>
+          <div class="mdl-card__actions mdl-card--border">
+            <div class="mdl-layout-spacer"></div>
+            <table class="mdl-data-table mdl-js-data-table table">
+              <tr>
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+                <td>4</td>
+              </tr>
+              <tr>
+                <td>q</td>
+                <td>w</td>
+                <td>e</td>
+                <td>r</td>
+              </tr>
+              <tr>
+                <td>a</td>
+                <td>s</td>
+                <td>d</td>
+                <td>f</td>
+              </tr>
+              <tr>
+                <td>z</td>
+                <td>x</td>
+                <td>c</td>
+                <td>v</td>
+              </tr>
+            </table>
+            <div class="style-select">
+              <div class="mdl-selectfield">
+                <label>Select a game</label>
+                <select class="browser-default" id="select-game">
+                  <option value="" disabled selected>Select a game</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
   <audio src="sound/beep.wav" style="display: none" id="beep"></audio>
 </body>
-<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
 <script src="https://storage.googleapis.com/code.getmdl.io/1.0.4/material.min.js"></script>
 <script type="text/javascript" src="chip8.js"></script>
 <script type="text/javascript" src="keyboard.js"></script>

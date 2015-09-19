@@ -1,0 +1,64 @@
+.canvas-keys {
+  position: relative;
+  top: 100px;
+}
+
+.mdl-canvas-div {
+  position: relative;
+  width: 640px;
+  height: 320px;
+  left: 100px;
+}
+
+.mdl-keys-div {
+  position: relative;
+  width: 330px;
+  height: 370px;
+  left: 200px;
+}
+
+.nav-style {
+  font-size: 20px;
+}
+
+.table {
+  margin: 0px auto;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+select {
+  font-family: inherit;
+  background-color: transparent;
+  width: 100%;
+  padding: 4px 0;
+  font-size: 16px;
+  color: $select-color;
+  border: none;
+  border-bottom: 1px solid #d3d3d3;
+}
+
+/* Remove focus */
+select:focus {
+  outline: none
+}
+
+/* Hide label */
+.mdl-selectfield label {display: none;}
+/* Use custom arrow */
+.mdl-selectfield select {appearance: none}
+.mdl-selectfield {
+  font-family: 'Roboto','Helvetica','Arial',sans-serif;
+  position: relative;
+}
+
+.style-select {
+  width: 200px;
+  padding: 20px;
+  margin: 0 auto;
+  top: 80%;
+  margin-top: -2em;
+  position: absolute;
+  right: 0;
+  left: 0;
+}
