@@ -31,6 +31,12 @@ Renderer.prototype.drawGraphics = function(display) {
   }
 }
 
+Renderer.prototype.playSound = function() {
+  console.log("called");
+  var sound = document.getElementById('beep');
+  sound.play();
+}
+
 //fetch program and load it to memory
 var loadProgramToMemory = function(program) {
   var xhr = new XMLHttpRequest();
@@ -50,7 +56,7 @@ var loadProgramToMemory = function(program) {
 var startEmulator = function() {
   chip8.initialize();
   var renderer = new Renderer();
-  loadProgramToMemory("HIDDEN");
+  loadProgramToMemory("INVADERS");
   chip8.setRenderer(renderer);
   chip8.emulateChip8();
 };

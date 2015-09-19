@@ -154,6 +154,8 @@ Chip8.prototype.emulateChip8 = function() {
 
       if(this.soundTimer > 0) {
         this.soundTimer -= 1;
+        //play beep sound
+        this.renderer.playSound();
       }
     }
 

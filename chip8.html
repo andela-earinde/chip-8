@@ -2,12 +2,20 @@
 <html>
 <head>
   <title>Chip8 emulator</title>
+  <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.4/material.indigo-pink.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
-  <canvas id="screen" width="640" height="320"></canvas>
-  <p>Crap</p>
+  <div class="mdl-card mdl-shadow--4dp mdl-canvas-div">
+    <div class="mdl-card__media">
+      <canvas id="screen" width="640" height="320"></canvas>
+    </div>
+  </div>
+  <audio src="sound/beep.wav" style="display: none" id="beep"></audio>
 </body>
 <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="https://storage.googleapis.com/code.getmdl.io/1.0.4/material.min.js"></script>
 <script type="text/javascript" src="chip8.js"></script>
 <script type="text/javascript" src="keyboard.js"></script>
 <script type="text/javascript" src="emulate.js"></script>
