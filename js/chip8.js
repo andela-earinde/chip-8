@@ -18,14 +18,6 @@ function Chip8() {
   //8-bit
   this.stackPointer = null;
 
-  this.memory = new Uint8Array(0x1000);
-
-  //16-bit long stack
-  this.stack = [];
-
-  //registers 8-bit
-  this.Vx = new Uint8Array(16);
-
   //set of hex characters for representing
   //some characters
   this.hexChars = [
@@ -60,6 +52,8 @@ Chip8.prototype.initialize = function() {
 
   this.soundTimer = 0;
 
+  this.memory = new Uint8Array(0x1000);
+
   this.delayTimer = 0;
 
   this.stackPointer = 0;
@@ -72,15 +66,11 @@ Chip8.prototype.initialize = function() {
 
   this.display = new Array(this.displayWidth * this.displayHeight);
 
-  //reset the registers
-  for(var i = 0; i < this.Vx.length; i++) {
-    this.Vx[i] = 0;
-  }
+  //registers 8-bit
+  this.Vx = new Uint8Array(16);
 
-  //reset the stack
-  for(var i = 0; i < this.stack.length; i++) {
-    this.stack[i] = 0;
-  }
+   //16-bit long stack
+  this.stack = [];
 
   for(var i = 0; i < this.hexChars.length; i++) {
     this.memory[i] = this.hexChars[i];
@@ -161,7 +151,8 @@ Chip8.prototype.emulateChip8 = function() {
 
     window.requestAnimationFrame(emulateCycle);
   }.bind(this);
-  window.requestAnimationFrame(emulateCycle);
+  init = window.requestAnimationFrame(emulateCycle);
+  return init;
 }
 
 Chip8.prototype.startCycle = function() {

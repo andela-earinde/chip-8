@@ -1,6 +1,7 @@
 (function(){
 //initialize chip8
 var chip8 = new Chip8();
+var cancelAnimFrame;
 
 ROMS = [
     "15PUZZLE",
@@ -39,39 +40,6 @@ for(var i = 0;  i < ROMS.length; i++) {
 }
 
 
-//renderer to draw graphics
-function Renderer() {
-  this.screen = document.getElementById("screen");
-  this.context = this.screen.getContext("2d");
-  this.context.fillRect(0, 0, 640, 320);
-}
-
-Renderer.prototype.clearDisplay = function() {
-  this.context.clearRect(0 , 0, 640, 320);
-}
-
-Renderer.prototype.drawGraphics = function(display) {
-  this.clearDisplay();
-  for (var i = 0; i < display.length; i++) {
-    xCord = (i % 64) * 10;
-    yCord = (Math.floor(i / 64)) * 10;
-    if(display[i]) {
-      this.context.fillStyle = "#ffffff";
-      this.context.fillRect(xCord, yCord, 10, 10);
-    }
-    else {
-      this.context.fillStyle = "#000000";
-      this.context.fillRect(xCord, yCord, 10, 10);
-    }
-  }
-}
-
-Renderer.prototype.playSound = function() {
-  console.log("called");
-  var sound = document.getElementById('beep');
-  sound.play();
-}
-
 //fetch program and load it to memory
 var loadProgramToMemory = function(program) {
   var xhr = new XMLHttpRequest();
@@ -88,20 +56,34 @@ var loadProgramToMemory = function(program) {
 };
 
 
-var startEmulator = function() {
+var startEmulator = function(game) {
   chip8.initialize();
   var renderer = new Renderer();
-  loadProgramToMemory("INVADERS");
+  loadProgramToMemory(game);
   chip8.setRenderer(renderer);
-  chip8.emulateChip8();
+  cancelAnimFrame = chip8.emulateChip8();
+  console.log(cancelAnimFrame);
 };
 
-//instantiate Keyboard
+/*
+* instantiate Keyboard
+*/
 var keyBoard = new Keyboard(chip8);
 
 //Add key event listeners
 addEventListener("keydown", keyBoard.keyPressed.bind(keyBoard));
 addEventListener("keyup", keyBoard.keyUp.bind(keyBoard));
 
-startEmulator();
+/*
+* handle click event to load game when an option is selected
+*/
+var options = document.getElementById('select-game');
+options.onchange = function(event) {
+  if (cancelAnimFrame) {
+    window.cancelAnimationFrame(cancelAnimFrame);
+    console.log("called" + cancelAnimFrame);
+  }
+  startEmulator(options.value);
+}
+
 })()
