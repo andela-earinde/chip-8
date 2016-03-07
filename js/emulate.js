@@ -77,13 +77,14 @@ addEventListener("keyup", keyBoard.keyUp.bind(keyBoard));
 /*
 * handle click event to load game when an option is selected
 */
-var options = document.getElementById('select-game');
-options.onchange = function(event) {
+var select = document.getElementById('select-game');
+select.onchange = function(event) {
   if (cancelAnimFrame) {
     window.cancelAnimationFrame(cancelAnimFrame);
     console.log("called" + cancelAnimFrame);
   }
-  startEmulator(options.value);
+  select.blur();
+  startEmulator(select.value);
 }
 
 })()
